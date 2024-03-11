@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <?php $this->load->view("admin/common/header"); ?>
+        <link href="<?php echo base_url() ?>thems/assets/plugins/select2/dist/css/select2.min.css" rel="stylesheet" />
+        <link href="<?php echo base_url() ?>thems/assets/plugins/DataTables/datatables.min.css" rel="stylesheet" />
+        <link href="<?php echo base_url() ?>thems/assets/css/custom/custom.css" rel="stylesheet"/>
+        <link href="<?php echo base_url() ?>thems/assets/plugins/hierarchical-tree-bootree/dist/bootree.min.css" rel="stylesheet" type="text/css"/>
+    </head>
+    <body class="dark-edition">
+        <div class="wrapper ">
+            <?php $this->load->view("admin/common/sidebar"); ?>
+            <div class="main-panel">
+                <!-- Navbar -->
+                <?php $this->load->view("admin/common/navbar"); ?>
+                <!-- End Navbar -->			
+                <div class="content">
+                    <div class="container-fluid">
+						<form id="treeform" action="<?php echo base_url();?>admin/Access_control/save_user_access" method="post">
+							<div class="form-group col-lg-12 col-sm-12 col-xs-12  mt-3 mb-4" style="border-style: solid;
+								 border-radius: 10px;">		                       	
+								<label for="from_user_role"><span class="input-group-text"><i class="material-icons">person</i></span> Select User *</label>
+								<select class="form-control user_role select2bs4" name="staff_id" id="staff_id" data-select2-id="user_role" tabindex="0" aria-hidden="false">
+									<option value="" data-select2-id="">Select User</option>                  		
+									<?php 
+									//Get users from Database
+									foreach($get_user as $user){
+									?>
+										<option value="<?php echo $user['staff_id'];?>"><?php echo $user['staff_id'];?></option>
+									<?php 
+									}
+									?>							
+								</select>											
+							</div>												
+							<div id="tree"></div> 
+							<input type="text" id="access" name="access" value="" hidden>    
+
+							<input type="text" id="user_id" name="user_id" value="" hidden>   
+							<!-- <button type="submit" class="btn btn-success m-3" id="access_save">Save<div class="ripple-container" ></div></button> -->
+						</form>
+                    </div>										
+                </div>								
+		<?php $this->load->view("admin/common/footer"); ?>
+
+		<script src="<?php echo base_url() ?>thems/assets/plugins/select2/dist/js/select2.min.js"></script>
+		<script src="<?php echo base_url() ?>thems/assets/plugins/hierarchical-tree-bootree/dist/bootree.min.js" type="text/javascript"></script>	
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>	
+
+
+		<!--Build BooTree and Retreive User Access(Created by Pasindu) -->
+		<script>				
+			$(function () {
+				//Initialize Select2 Elements
+				$('.select2bs4').select2({ });
+			})
+			const myData = [{			
+					id: 'dashboard',
+					text: 'Dashboard'					
+				},{
+					//id: "allorders_parent",
+					text: 'All Orders',
+					children: [{
+							id: 'add_orders',
+							text: 'Add New Orders',
+							children: [{
+									id: 'add_orders',
+									text: 'Add New Orders Page'
+							},{
+									//id: 'uploadbulk',
+									text: 'Upload Bulk Orders',								
+							},{
+									//id: 'uploadsingle',
+									text: 'Upload Single Orders'
+							}]
+					},{
+							//id: 'all_orders_access',
+							text: 'All Orders',
+							children: [{
+									id: 'all_orders',
+									text: 'All Orders Page'
+							},{
+									id: 'view_order',
+									text: 'View Orders'
+							},{
+									id: 'edit_orde',
+									text: 'Edit Orders'
+							},{
+									id: 'delete_order',
+									text: 'Delete Orders',
+									children: [{
+											//id: 'singledelete',
+											text: 'Single Delete'
+									},{
+											//id: 'bulkdelete',
+											text: 'Bulk Delete'
+									}]	
+							}]
+					},{
+							id: 'bulktrack',
+							text: 'Bulk Track'
+					}]
+			},{
+					//id: 'customers',
+					text: 'Manage Customers',
+					children: [{
+							id: 'customers',
+							text: 'Manage Customers Page'
+					},{
+							id: 'cust_status',
+							text: 'Activation'
+					},{
+							id: 'copy_email',
+							text: 'Copy Email'
+							
+					},{
+							id: 'barcode_requests',
+							text: 'Request Barcode'
+							
+					},{
+							id: 'cust_edit',
+							text: 'Edit Customers'
+							
+					},{
+							id: 'cust_delete',
+							text: 'Delete Customers'
+							
+					},{
+							id: 'cust_visit',
+							text: 'Visit Customers'
+							
+					},{
+							//id: 'cust_assign',
+							text: 'Add Payments'
+							
+					}]
+						
+			},{
+					//id: 'pickuprequest',
+					text: 'Pickup Request',
+					children: [{
+							id: 'pickuprequest',
+							text: 'Pickup Request Page'
+					},{
+							id: 'pick_assign',
+							text: 'Assign'
+					},{
+							id: 'picked',
+							text: 'Change Status'
+					},{
+							id: 'pick_delete',
+							text: 'Delete'
+					}]
+					
+			},{
+					id: 'pay_process',
+					text: 'Transaction',
+					children:[{
+							//id: 'paendingpayments',
+							text:'Pending Payments',
+							children: [{
+									id: 'paendingpayments',
+									text: 'Pending Payments Page'
+							},{
+									id: 'pending_pay',
+									text: 'Pay Pending Payments'
+							}]
+							
+					},{
+							id: 'paid_payment',
+							text: 'Paid Payments Page'							
+					},{
+							id: 'clientoutstanding',
+							text: 'Client Outstandings'
+					},{
+							id: 'bank_statement',
+							text: 'Upload Statements',
+							children: [{
+									id: 'edit_statement',
+									text: 'Edit Error Transactions'
+							},{
+									id: 'edit_statement',
+									text: 'Edit Success Transactions'
+							}]
+					},{
+							id: 'payment_ajesment',
+							text: 'Payments Adjustment'
+					},{
+							id: 'invoice',
+							text: 'Monthly Invoice'
+					}]															
+				},{
+					//id: 'branchdepos',
+					text: 'Branch Deposits',
+					children: [{
+							//id: 'deposit_money',
+							text: 'Deposit Money',
+							children: [{
+									id: 'deposit_money',
+									text: 'Deposit Money Page'
+							},{
+									id: 'deposit_approve',
+									text: 'Deposit Approve'
+							}]
+					},{
+							id: 'rider_deposit',
+							text: 'Rider Money'
+					},{
+							id: 'rider_activate',
+							text: 'Rider Activation'
+					},{
+							//id: 'cashreg',
+							text: 'Cash Register'
+					}]
+					
+				},{
+					//id: 'del_rates',
+					text: 'Delivery Rates',
+					children: [{
+							id: 'del_rates',
+							text: 'Delivery Rates Page'
+					},{
+							//id: 'delrates',
+							text: 'Add Rates'
+					},{
+							//id: 'editrates',
+							text: 'Edit Rates'
+					}]
+					
+				},{
+					//id: 'security',
+					text: 'Security & Access Ctrl',
+					children:[{
+							id: 'manageusers',
+							text: 'Manage Users',
+							children: [{
+									id: 'is_user_activate',
+									text: 'Activate'
+							},{
+									id: 'is_rider_activate',
+									text: 'Delivery Agent'
+							},{
+									id: 'is_pickup_activate',
+									text: 'Pick Ups'
+							},{
+									id: 'is_user_edit',
+									text: 'Edit'
+							},{
+									id: 'is_user_approve',
+									text: 'Approve'
+							},{
+									id: 'resetpassword',
+									text: 'Reset'
+							},{
+									id: 'create_user',
+									text: 'Add Users Page'
+							},{
+									//id: 'profile',
+									text: 'View Users'
+							}]
+					},{
+						//id:54,
+						text: 'Access Groups'
+					}]					
+				},{
+					//id: 'reports',
+					text: 'Reports',
+					children: [{
+							id: 'order_reports',
+							text: 'Order Reports Page'
+					},{
+							id: 'delreport',
+							text: 'Delivery Reports Page'
+					},{
+							id: 'branch_pendig_report',
+							text: 'Branch Pending Orders'
+					},{
+							id: 'Branchnextday',
+							text: 'Next Day Success'
+					},{
+							id: 'return_summary',
+							text: 'Return Summery Page'
+					},{
+							id: 'agent_report',
+							text: 'Individual Performance Page'
+					},{
+							id: 'lead_time',
+							text: 'Lead Time'
+					},{
+							id: 'weekly_order',
+							text: 'Weekly Orders Page'
+					},{
+							id: 'pending_orders',
+							text: 'Pending Orders Page'
+					},{
+							id: 'completedreport',
+							text: 'Completed Orders Page'
+					},{
+							id: 'notatempt',
+							text: 'Not Attempted Orders Page'
+					},{
+							id: 'branch_nextday',
+							text: 'Branch Next Day Delivery Page'
+					},{
+							id: 'branch_pending',
+							text: 'Branch Pendings Page'
+					},{
+							id: 'rider_perform',
+							text: 'Rider Performance'
+					}]					
+				},{
+					//id: 70,
+					text: 'Branch Operations',
+					children: [{
+							//id: 'collect_orders',
+							text: 'Collect Orders',
+							children: [{
+									id: 'collect_orders',
+									text: 'Collect Orders Page',
+							},{
+									id: 'collect_update',
+									text: 'Update Collect Orders'
+							}]
+					},{
+							id: 'dispatch',
+							text: 'Dispatch',
+							children: [{
+									id: 'dispatch',
+									text:'Dispatch Page'
+							},{
+									id: 'bulk_dispatch',
+									text:'Bulk Dispatch'
+							},{
+									//id: 'single_dispatch',
+									text: 'Single Dispatch'
+							},{
+									id: 'bin_dispatch',
+									text: 'Dispatch Bins'
+							}]
+					},{
+							id: 'branchreceive',
+							text: 'Branch Recieve Page'
+					},{
+							id: 'assignagent',
+							text: 'Assign Page'
+					},{
+							//id: 'returnto_ho',
+							text: 'Return to HO',
+							children: [{
+									id: 'returnto_ho',
+									text: 'Return to HO Page'
+							},{
+									id: 'toho_note',
+									text: 'Return to HO Notes'
+							}]
+					},{
+							id: 'returnreceive',
+							text: 'Return Recieve Page'
+					},{
+							//id: 'return_clearance',
+							text: 'Return Clearance'
+					},{
+							id: 'returntoclient',
+							text: 'Return to Client Page'
+					},{
+							id: 'receive_warehouse',
+							text: 'Recieve at Warehouse Page'
+					},{
+							id: 'pendingdelivered',
+							text: 'Pending Delivered Page'
+					},{
+							id: 'order_clear',
+							text: 'Order Clearance Page'
+					},{
+							id: 'dispatch_note',
+							text: 'Dispatch Notes Page',
+							children: [{
+									id: 'update_dp_note',
+									text: 'Update Dispatch Notes'
+							}]
+					},{
+							//id: 'return_notes',
+							text:'Return Notes'
+					},{
+							id: 'bin_warehouse',
+							text: 'Bin Recieve-Warehouse'
+					},{
+							id: 'pendingdd',
+							text: 'Pending DD'
+					},{
+							id: 'pending_failed' ,
+							text: 'Pending Failed'
+					}]	
+				},{
+					//id: 93,
+					text: 'General',
+					children: [{
+							id: 'attendance',
+							text: 'Attendance Page'
+					},{
+							id: 'fuel',
+							text: 'Fuel Expenses Page'
+					},{
+							//id: 'expensess',
+							text: 'Branch Expenses',
+							children: [{
+									id: 'expensess',
+									text: 'Branch Expenses Page'
+							},{
+									id: 'expenses_approve',
+									text: 'Expenses Approve'
+							}]
+					},{
+							//id: 'past_attendance',
+							text: 'Past Attendance',
+							children: [{
+									id: 'past_attendance',
+									text: 'Past Attendance Page'
+							},{
+									id: 'past_att_edit',
+									text: 'Edit'
+							},{
+									id: 'past_att_delete',
+									text: 'Delete'
+							}]
+					},{
+							//id: 'past_expensess',
+							text: 'Past Expenses',	
+							children: [{
+									id: 'past_expensess',
+									text: 'Past Expenses Page'
+							},{
+									id: 'past_ex_edit',
+									text: 'Edit'
+							},{
+									id: 'past_ex_delete',
+									text: 'Delete'
+							}]
+					}]					
+				},{
+					//id: 'demacation',
+					text: 'Demarcation',
+					children: [{
+							id: 'demacation',
+							text: 'Demarcation Page'
+					},{
+							//id: demarc_add',
+							text: 'Add'
+					},{
+							//id: 'demarc_edit',
+							text: 'Edit'
+					}]
+					
+				},{
+					//id: 'site_admin',
+					text: 'Site Admin',
+					children: [{
+							id: 'reverse_order',
+							text: 'Reverse Order'
+					},{
+							id: 'receive_log',
+							text: 'Recieve Log Page'
+					},{
+							id: 'sms',
+							text: 'Sent SMS Page'
+					},{
+							//id: 'barcodes',
+							text: 'Barcodes'
+					},{
+							id: 'branch_list',
+							text: 'Branches',
+							children: [{
+									//id: 'change_manager',
+									text: 'Change Manager'
+							},{
+									id: 'activate_branch',
+									text: 'Change Status'
+							},{
+									id: 'edit_branch',
+									text: 'Branch Edit'
+							}]
+					}]
+				}]
+
+				const myTree = $('#tree').tree({
+					primaryKey: 'id',
+					dataSource: myData,
+					checkboxes: true
+				});
+
+				//myTree.getCheckedNodes();
+
+			$('#tree :input[type=checkbox]').on('change', function () {
+				$('#access').val(myTree.getCheckedNodes(1));
+			});
+
+			$("#staff_id").on('change',function(){
+				$.post('<?php echo base_url();?>admin/Access_control/getUserAccessById',{staff_id:$("#staff_id").val()}).done(function(data){
+					var obj = jQuery.parseJSON(data);
+						
+					$.each(obj,function(index,value) {
+						//console.log("Processing index:", index, "with value:", value);
+						var arrayx = ['acc_id','staff_id','acc_group','cust_assign','profile','timeline','do_the_reverse','delrates','fuel_balance'];
+						if (arrayx.indexOf(index) === -1) {
+							if (value == 1) {
+								myTree.check(myTree.getNodeById(index));
+							} else {
+								myTree.uncheck(myTree.getNodeById(index));
+							}
+						}	
+					});
+				})
+			});
+		</script>	
+
+		<!-- Update User Access(Created by Pasindu) -->
+		<script>
+			$(document).ready(function() {
+				$("form").on('change','#tree', function(event) {
+					event.preventDefault();
+					
+					var form = $('#treeform');
+					$.post(form.attr("action"), form.serialize(), function(response) {
+						var result = JSON.parse(response);
+						if (result.status === "success") {
+							Swal.fire("Done!", result.message, result.status); 
+						} else {
+							Swal.fire("Try again!", result.message, result.status); 
+						}
+					});
+				});
+			});
+		</script>
+	</body>
+</html>
